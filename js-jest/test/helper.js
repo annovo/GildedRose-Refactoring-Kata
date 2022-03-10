@@ -1,5 +1,3 @@
-const { Item } = require("../src/gilded_rose");
-
 const singleItemTestTable = [
   {
     name: "foo",
@@ -12,6 +10,14 @@ const singleItemTestTable = [
   {
     name: "foo",
     description: "standart item quality is not negative",
+    sellIn: 1,
+    quality: -1,
+    expectedSellIn: 0,
+    expectedQuality: 0,
+  },
+  {
+    name: "foo",
+    description: "standart item cant become negative",
     sellIn: 1,
     quality: 0,
     expectedSellIn: 0,
@@ -38,6 +44,14 @@ const singleItemTestTable = [
     description: "Sulfuras quality and sell date not updated",
     sellIn: -2,
     quality: 80,
+    expectedSellIn: -2,
+    expectedQuality: 80,
+  },
+  {
+    name: "Sulfuras, Hand of Ragnaros",
+    description: "Sulfuras quality always 80",
+    sellIn: 2,
+    quality: 50,
     expectedSellIn: 2,
     expectedQuality: 80,
   },
