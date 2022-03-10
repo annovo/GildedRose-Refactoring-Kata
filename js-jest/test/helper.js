@@ -24,6 +24,14 @@ const singleItemTestTable = [
     expectedQuality: 0,
   },
   {
+    name: "foo",
+    description: "standart item cant become negative",
+    sellIn: 0,
+    quality: 5,
+    expectedSellIn: -1,
+    expectedQuality: 3,
+  },
+  {
     name: "Aged Brie",
     description: "Aged Brie updates correctly",
     sellIn: 2,
@@ -58,9 +66,9 @@ const singleItemTestTable = [
   {
     name: "Backstage passes to a TAFKAL80ETC concert",
     description: "quality updated for more than 10 days prior concert",
-    sellIn: 11,
+    sellIn: 12,
     quality: 2,
-    expectedSellIn: 10,
+    expectedSellIn: 11,
     expectedQuality: 3,
   },
   {
