@@ -129,6 +129,50 @@ const singleItemTestTable = [
   },
 ];
 
+const multipleItemsTable = [
+  {
+    description: "different items updated correctly",
+    items: [
+      {
+        name: "foo",
+        sellIn: 2,
+        quality: 3,
+        expectedSellIn: 2 - 1,
+        expectedQuality: 3 - 1,
+      },
+      {
+        name: "Conjured item",
+        sellIn: 0,
+        quality: 7,
+        expectedSellIn: 0 - 1,
+        expectedQuality: 7 - 1 - 1 - 1 - 1,
+      },
+      {
+        name: "Backstage passes to a TAFKAL80ETC concert",
+        sellIn: 9,
+        quality: 3,
+        expectedSellIn: 9 - 1,
+        expectedQuality: 3 + 2,
+      },
+      {
+        name: "Aged Brie",
+        sellIn: 2,
+        quality: 45,
+        expectedSellIn: 2 - 1,
+        expectedQuality: 45 + 1,
+      },
+      {
+        name: "Sulfuras, Hand of Ragnaros",
+        sellIn: -2,
+        quality: 80,
+        expectedSellIn: -2,
+        expectedQuality: 80,
+      },
+    ],
+  },
+];
+
 module.exports = {
   singleItemTestTable,
+  multipleItemsTable,
 };
