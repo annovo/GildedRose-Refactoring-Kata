@@ -9,15 +9,8 @@ const MAX_QUALITY_VALUE = 50;
 const MIN_QUALITY_VALUE = 0;
 const LEGENDARY_ITEM_VALUE = 80;
 
-class DateRange {
-  constructor(lowerBound, upperBound) {
-    this.lowerBound = lowerBound;
-    this.upperBound = upperBound;
-  }
-}
-
 class NonUpdatableItem {
-  constructor(value) {
+  constructor(value = LEGENDARY_ITEM_VALUE) {
     this.value = value;
   }
 
@@ -27,103 +20,70 @@ class NonUpdatableItem {
 }
 
 class UpdatableItem extends NonUpdatableItem {
-  constructor(minVal, maxVal, dateRange, valUpdateRange) {
+  constructor(
+    decreaseVal,
+    minVal = MIN_QUALITY_VALUE,
+    maxVal = MAX_QUALITY_VALUE
+  ) {
     super();
+    this.decreaseVal = decreaseVal;
     this.maxVal = maxVal;
     this.minVal = minVal;
-    this.dateRange = [...dateRange];
-    this.valUpdateRange = [...valUpdateRange];
   }
 
-  updateItem(item) {
+  decreaseSellIn(item) {
     item.sellIn--;
-    for (let i = 0; i < this.dateRange.length; i++) {
-      if (
-        item.sellIn > this.dateRange[i].lowerBound &&
-        item.sellIn <= this.dateRange[i].upperBound
-      ) {
-        item.quality += this.valUpdateRange[i];
-        break;
-      }
-    }
+  }
 
+  decreaseQuality(item) {
+    item.quality += item.sellIn > 0 ? this.decreaseVal : this.decreaseVal * 2;
+  }
+
+  checkItem(item) {
     if (item.quality < this.minVal) item.quality = this.minVal;
     else if (item.quality > this.maxVal) item.quality = this.maxVal;
   }
+
+  updateItem(item) {
+    this.decreaseSellIn(item);
+    this.decreaseQuality(item);
+    this.checkItem(item);
+  }
 }
 
-const itemToParams = {
-  "Aged Brie": {
-    minVal: MIN_QUALITY_VALUE,
-    maxVal: MAX_QUALITY_VALUE,
-    dateRange: [
-      new DateRange(Number.MIN_SAFE_INTEGER, -1),
-      new DateRange(-1, Number.MAX_SAFE_INTEGER),
-    ],
-    valRange: function () {
-      return [2, 1];
-    },
-  },
-  "Backstage passes": {
-    minVal: MIN_QUALITY_VALUE,
-    maxVal: MAX_QUALITY_VALUE,
-    dateRange: [
-      new DateRange(Number.MIN_SAFE_INTEGER, -1),
-      new DateRange(-1, 5),
-      new DateRange(5, 10),
-      new DateRange(10, Number.MAX_SAFE_INTEGER),
-    ],
-    valRange: function () {
-      return [-this.maxVal, 3, 2, 1];
-    },
-  },
-  default: {
-    minVal: MIN_QUALITY_VALUE,
-    maxVal: MAX_QUALITY_VALUE,
-    dateRange: [
-      new DateRange(Number.MIN_SAFE_INTEGER, -1),
-      new DateRange(-1, Number.MAX_SAFE_INTEGER),
-    ],
-    valRange: function () {
-      return [-2, -1];
-    },
-  },
-};
+class UpdateInRange extends UpdatableItem {
+  constructor(...props) {
+    super(...props);
+  }
+
+  decreaseQuality(item) {
+    if (item.sellIn > 10) item.quality += this.decreaseVal;
+    else if (item.sellIn > 5) item.quality += this.decreaseVal + 1;
+    else if (item.sellIn >= 0) item.quality += this.decreaseVal + 2;
+    else item.quality = 0;
+  }
+}
 
 class Shop {
   constructor(items = []) {
     this.items = items;
   }
 
-  getKey(name) {
-    for (const key in itemToParams) {
-      if (key === "default") continue;
-      if (name.startsWith(key)) return itemToParams[key];
-    }
-    return itemToParams.default;
-  }
+  createCategory(name) {
+    if (name.startsWith("Sulfuras")) return new NonUpdatableItem();
 
-  categorize(name) {
-    if (name.startsWith("Sulfuras"))
-      return new NonUpdatableItem(LEGENDARY_ITEM_VALUE);
+    if (name.startsWith("Backstage passes")) return new UpdateInRange(1);
 
-    let itemParams = itemToParams["default"];
-    for (const key in itemToParams) {
-      if (key === "default") continue;
-      if (name.startsWith(key)) itemParams = itemToParams[key];
-    }
-    return new UpdatableItem(
-      itemParams.minVal,
-      itemParams.maxVal,
-      itemParams.dateRange,
-      itemParams.valRange()
-    );
+    if (name.startsWith("Aged Brie")) return new UpdatableItem(1);
+
+    if (name.startsWith("Conjured")) return new UpdatableItem(-2);
+
+    return new UpdatableItem(-1);
   }
 
   updateQuality() {
     for (let item of this.items) {
-      let updatedItem = this.categorize(item.name);
-      updatedItem.updateItem(item);
+      this.createCategory(item.name).updateItem(item);
     }
 
     return this.items;
